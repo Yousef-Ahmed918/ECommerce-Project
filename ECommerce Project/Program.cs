@@ -2,6 +2,10 @@
 using Domain.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Presistence.Data;
+using Presistence.Repositories;
+using Services;
+using Services.MappingProfiles;
+using ServicesAbstraction;
 
 namespace ECommerce_Project
 {
@@ -26,6 +30,13 @@ namespace ECommerce_Project
             //Configure my services [Classes and Interfaces]
             builder.Services.AddScoped<IDataBaseInitializer,DBInitializer>();
 
+            //add unitofwork service
+            builder.Services.AddScoped<IUnitOfWork,UnitOfWork>();
+            //Auto Mapper
+            builder.Services.AddAutoMapper(typeof(ProductProfile).Assembly);
+
+            //add Service Manager
+            builder.Services.AddScoped<IServiceManager, ServiceManager>();
 
             var app = builder.Build();
 
@@ -38,7 +49,7 @@ namespace ECommerce_Project
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            app.UseStaticFiles();
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
