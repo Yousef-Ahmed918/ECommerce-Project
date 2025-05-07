@@ -45,12 +45,16 @@ namespace Presistence.Repositories
             return result; 
         }
 
-        public async Task<TEntity> GetByIdAsync(ISpecifications<TEntity> specifications)
+        public async Task<TEntity?> GetByIdAsync(ISpecifications<TEntity> specifications)
         {
             var result =await SpecificationEvaluator.
                 CreateQuery(_dbContext.Set<TEntity>(), specifications)
                 .FirstOrDefaultAsync();
             return result;
         }
+
+        public async Task<int> CountAsync(ISpecifications<TEntity> specifications)=>
+           await SpecificationEvaluator.CreateQuery(_dbContext.Set<TEntity>(),specifications).CountAsync();
+        
     }
 }

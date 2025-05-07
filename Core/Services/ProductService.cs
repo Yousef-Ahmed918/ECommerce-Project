@@ -5,7 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Domain.Contracts;
-using Domain.Modules;
+using Domain.Exceptions;
+using Domain.Modules.ProductModule;
 using Services.Specifications;
 using ServicesAbstraction;
 using Shared;
@@ -30,12 +31,14 @@ namespace Services
             var specs = new ProductSpecification(productQueryParameters);//No Filter With id 
            var products =await _unitOfWork.GetRepository<Product,int>().GetAllAsync(specs);
            var productRes= _mapper.Map<IEnumerable<ProductResponse>>(products);
+            var countSpec = new ProductCountSpecification(productQueryParameters);
+            var productCount=await _unitOfWork.GetRepository<Product,int>().CountAsync(countSpec);
             var res = new PaginatedResponse<ProductResponse>()
             {
                 Data = productRes,
-                PageIndex = productQueryParameters.PageIndex,
+                PageIndex = productQueryParameters.PageIndex,    
                 PageSize = productQueryParameters.PageSize,
-                TotalCount = productRes.Count()
+                TotalCount = productCount
             };
             return res;
         }
@@ -51,7 +54,8 @@ namespace Services
         public async Task<ProductResponse> GetProductByIdAsync(int id)
         {
             var specs=new ProductSpecification(id);
-            var product = await _unitOfWork.GetRepository<Product, int>().GetByIdAsync(specs);
+            var product = await _unitOfWork.GetRepository<Product, int>().GetByIdAsync(specs)??
+                throw(new ProductNotFoundException(id));
             return _mapper.Map<ProductResponse>(product);
         }
     }

@@ -1,11 +1,17 @@
 
+using Azure;
 using Domain.Contracts;
+using ECommerce_Project.Factories;
+using ECommerce_Project.Middlewares;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Presistence;
 using Presistence.Data;
 using Presistence.Repositories;
 using Services;
 using Services.MappingProfiles;
 using ServicesAbstraction;
+using Shared.ErrorModels;
 
 namespace ECommerce_Project
 {
@@ -16,32 +22,21 @@ namespace ECommerce_Project
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            builder.Services.AddWebApplicationServices();
 
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer(); //Swagger Related
-            builder.Services.AddSwaggerGen(); //Swagger Related
-
-            builder.Services.AddDbContext<StoredDbContext>(options =>
-            {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-            });
-
-            //Configure my services [Classes and Interfaces]
-            builder.Services.AddScoped<IDataBaseInitializer,DBInitializer>();
-
-            //add unitofwork service
-            builder.Services.AddScoped<IUnitOfWork,UnitOfWork>();
-            //Auto Mapper
-            builder.Services.AddAutoMapper(typeof(ProductProfile).Assembly);
-
-            //add Service Manager
-            builder.Services.AddScoped<IServiceManager, ServiceManager>();
-
+            //Refactor the services
+            builder.Services.AddInfrastructureRegisteration(builder.Configuration);
+            builder.Services.AddServices(); 
+            
             var app = builder.Build();
 
-            await  InitializeDbAsync(app);
-           
+            await  app.InitializeDbAsync();
+
+
+            //Custom Exception Middleware
+            app.UseMiddleware<CustomeExceptionHandlerMiddleware>();
+
+            
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -49,7 +44,7 @@ namespace ECommerce_Project
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-            app.UseStaticFiles();
+            app.UseStaticFiles();   
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
@@ -62,11 +57,6 @@ namespace ECommerce_Project
 
         //Scope  is used when i want to inject in the main program but i cant 
         //It Performed after the build 
-        public static async Task InitializeDbAsync(WebApplication app)
-        {
-            using var scope = app.Services.CreateScope();
-            var dbIntializer = scope.ServiceProvider.GetRequiredService<IDataBaseInitializer>();
-            await dbIntializer.InitializerAsync();
-        }
+        
     }
 }

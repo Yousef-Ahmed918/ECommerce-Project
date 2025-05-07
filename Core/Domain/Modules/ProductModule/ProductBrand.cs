@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Modules
+namespace Domain.Modules.ProductModule
 {
-    public class ProductType :BaseEntity<int>
+    public class ProductBrand : BaseEntity<int>
     {
     }
 }

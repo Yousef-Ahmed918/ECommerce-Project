@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
-using Domain.Modules;
+using Domain.Modules.ProductModule;
 using Microsoft.Extensions.Configuration;
 using Shared.DTOs.Product;
 
